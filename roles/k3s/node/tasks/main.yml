@@ -1,0 +1,37 @@
+---
+
+- name: Join worker nodes to Kubernetes cluster
+  become: true
+  shell: >
+    k3sup join
+    --ip 217.79.178.122
+    --user {{ansible_user}}
+    --sudo
+    --server-ip {{ tls_san }}
+    --ssh-key {{ ansible_user_dir }}/.ssh/id_rsa
+#   --ip {{ item }}
+#  loop: "{{ groups['node'] }}"
+#  when: inventory_hostname != item
+
+- name: get node name
+  become: true
+  shell: kubectl label node $(kubectl get nodes -o wide | grep 217.79.178.122 | awk '{print $1}') node-role.kubernetes.io/worker=true
+  environment:
+    KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
+  register: node_name
+#  loop: "{{ groups['node'] }}"
+#  when: inventory_hostname != item
+#- name: get node name
+#  become: true
+#  shell: kubectl label node $(kubectl get nodes -o wide | grep {{item}} | awk '{print $1}') node-role.kubernetes.io/worker=true
+#  environment:
+#    KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
+#  register: node_name
+#  loop: "{{ groups['node'] }}"
+#  when: inventory_hostname != item
+#
+#- name: install k8s agent on portainer via node port
+#  become: true
+#  shell: kubectl apply -f  https://downloads.portainer.io/ce2-17/portainer-agent-k8s-nodeport.yaml -n portainer
+#  environment:
+#    KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"

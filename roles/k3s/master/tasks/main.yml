@@ -1,0 +1,34 @@
+#---
+
+- name: Download kube-vip RBAC manifest
+  become: true
+  get_url:
+    url: https://kube-vip.io/manifests/rbac.yaml
+    dest: /var/lib/rancher/k3s/server/manifests/kube-vip-rbac.yaml
+    owner: atem
+    group: atem
+
+- name: Make containerd.sock writable and pull kube-vip image
+  become: true
+  shell:
+    cmd: |
+      sudo chmod -R 777 /run/k3s/containerd/containerd.sock
+      ctr image pull docker.io/plndr/kube-vip:latest
+
+#- name: Create kube-vip DaemonSet manifest
+#  become: true
+#  shell:
+#    cmd: |
+#      'alias kube-vip="sudo ctr run --rm --net-host docker.io/plndr/kube-vip:latest vip /kube-vip"'
+#      source ~/.bashrc
+#      kube-vip
+#  args:
+#    executable: /bin/bash
+
+- name: Define alias for kube-vip
+  become: true
+  shell:
+    cmd: |
+      sudo ctr run --rm --net-host docker.io/plndr/kube-vip:latest vip /kube-vip manifest daemonset --arp --interface ens3 --address {{tls_san}} --controlplane --leaderElection --taint --inCluster | sudo tee /var/lib/rancher/k3s/server/manifests/kube-vip.yaml
+  args:
+    executable: /bin/bash

@@ -1,0 +1,37 @@
+#---
+
+#- name: Edit Kubernetes server IP in Kubeconfig
+#  ansible.builtin.lineinfile:
+#    path: "{{ ansible_user_dir }}/.kube/config"
+#    regexp: '(\s*server:\s+)https://.*$'
+#    line: '  server: https://{{ tls_san }}:6443'
+
+#- name: Run kubectl get ds -A
+#  become: true
+#  command: kubectl --kubeconfig={{ ansible_user_dir }}/.kube/config get ds -A
+#  args:
+#    executable: /bin/bash
+#  ignore_errors: true
+
+
+- name: Join other master nodes to control plane
+  shell: >
+    k3sup join
+    --ip {{ item }}
+    --user {{ansible_user}}
+    --sudo
+    --server-user {{ansible_user}}
+    --sudo
+    --server-ip {{ tls_san }}
+    --server
+    --k3s-extra-args "disable servicelb --node-ip={{ item }}"
+    --k3s-version v1.24.9+k3s2
+    --ssh-key {{ ansible_user_dir }}/.ssh/id_rsa
+  loop: "{{ groups['master_node'] }}"
+  when: inventory_hostname != item
+
+#- name: Run kubectl get nodes -A
+#  become: true
+#  command: kubectl --kubeconfig={{ ansible_user_dir }}/.kube/config get nodes -A
+#  args:
+#    executable: /bin/bash

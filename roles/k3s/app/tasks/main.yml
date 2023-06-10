@@ -1,0 +1,58 @@
+---
+
+#- name: create namespace for argocd
+#  become: true
+#  shell: kubectl create namespace argocd
+#  environment:
+#    KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
+
+
+- name: Install argocd
+  become: true
+  shell: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  environment:
+    KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
+
+#- name: Patch argocd-server service
+#  ansible.builtin.shell:
+#    cmd: "kubectl patch svc argocd-server -n argocd -p '{\"spec\": {\"type\": \"LoadBalancer\"}}'"
+#  environment:
+#    KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
+#
+#
+#- name: Get services using kubectl
+#  ansible.builtin.shell:
+#    cmd: "kubectl --kubeconfig={{ ansible_user_dir }}/.kube/config get svc -A"
+#  register: result
+#  changed_when: false
+#
+#- name: create curator namespace
+#  ansible.builtin.shell:
+#    cmd: "kubectl --kubeconfig={{ ansible_user_dir }}/.kube/config create namespace curator"
+#  register: result
+#  changed_when: false
+#
+#- name: install sealed-secrets with helm
+#  become: true
+#  shell: helm repo add bitnami https://charts.bitnami.com/bitnami
+#  environment:
+#    KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
+#
+#- name: Pull sealed-secrets chart
+#  become: true
+#  shell: helm pull bitnami/sealed-secrets
+#  environment:
+#      KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
+#
+#
+#- name: Install sealed-secrets
+#  become: true
+#  shell: helm install sealed-secrets --namespace kube-system --repo https://bitnami-labs.github.io/sealed-secrets sealed-secrets
+#  environment:
+#      KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
+#
+#- name: install prometheus-operator with helm
+#  become: true
+#  shell: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+#  environment:
+#    KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
